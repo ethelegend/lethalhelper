@@ -6,5 +6,7 @@ This program runs entirely within standard input and output. I haven't learned h
 For anyone wanting to use this code, feel free to do so. This is my first time coding in Java, so it's probably not that great. 
 
 v1.1 - General clean-up of the code
+
 v1.2 - Streamlined the code that runs recursiveSearcher by ~90%
+
 v1.3 - Added repetition and deletion of array elements
