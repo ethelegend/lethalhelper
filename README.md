@@ -14,3 +14,5 @@ v1.1 - General clean-up of the code
 v1.2 - Streamlined the code that runs recursiveSearcher by ~90%
 
 v1.3 - Added repetition and deletion of array elements, uploaded to GitHub
+
+v1.4 - Reduced memory load by replacing ints to shorts and bytes
