@@ -7,11 +7,11 @@ public class lethalhelper {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         ArrayList<Integer> scrapList = new ArrayList<Integer>(); // List of all the objects' values.
-        int quota; // Amount of credits (currency) required by the Company
-        int players; // Amount of players in the lobby
-        int input; // Temporary variable used to copy terminal input to scrapList
-        int scrapValue; // Total value of scrap
-        int bodiesNeeded; // Dead players' bodies can be sold to the Company for 5 scrap each, but you lose some credits that you could use to buy upgrades.
+        short quota; // Amount of credits (currency) required by the Company
+        byte players; // Amount of players in the lobby. Unmodded max is 4 but modded max is ~40
+        short input; // Temporary variable used to copy terminal input to scrapList
+        short scrapValue; // Total value of scrap
+        short bodiesNeeded; // Dead players' bodies can be sold to the Company for 5 scrap each, but you lose some credits that you could use to buy upgrades.
 
         while (true) {
             System.out.println();
@@ -34,7 +34,7 @@ public class lethalhelper {
                 if (input > 0) {
                     scrapList.add(input); // Having a multidimensional array to label the scrap would be cool, but it would be a headache to implement
                 } else { // By prefixing the input with a -, you can remove previous inputs
-                    for (int i = input; i < 0; i++) {
+                    for (byte i = (byte) input; i < 0; i++) {
                         scrapList.removeLast();
                     }
                 }
@@ -46,7 +46,7 @@ public class lethalhelper {
 
             // This code calculates the total amount of scrap you have
             scrapValue = 0;
-            for (Integer i : scrapList) {
+            for (short i : scrapList) {
                 scrapValue += i;
             }
             
@@ -65,7 +65,7 @@ public class lethalhelper {
                 ArrayList<Integer> solution = recursiveSearcher(scrapList, 0, quota);
                 System.out.println(bodiesNeeded + " must be sacrificed, " + -solution.getLast() + " overshoot"); // Overshoot is strictly <= 0, so the minus sign is important
                 solution.removeFirst();
-                solution.removeLast(); // THe first value in the list is 0, and the last value in the list is the overshoot of the solution, and it might confuse people if I left it in
+                solution.removeLast(); // The first value in the list is 0, and the last value in the list is the overshoot of the solution, and it might confuse people if I left it in
                 System.out.println(solution);
             }
             
