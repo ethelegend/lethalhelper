@@ -11,7 +11,7 @@ public class lethalhelper {
         byte players; // Amount of players in the lobby. Unmodded max is 4 but modded max is ~40
         short input; // Temporary variable used to copy terminal input to scrapList
         short scrapValue; // Total value of scrap
-        short bodiesNeeded; // Dead players' bodies can be sold to the Company for 5 scrap each, but you lose some credits that you could use to buy upgrades.
+        byte bodiesNeeded; // Dead players' bodies can be sold to the Company for 5 scrap each, but you lose some credits that you could use to buy upgrades.
 
         while (true) {
             System.out.println();
