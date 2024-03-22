@@ -1,34 +1,80 @@
+import javax.swing.*;
+import javax.swing.BoxLayout;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 
-public class lethalhelper {
-    
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        ArrayList<Integer> scrapList = new ArrayList<Integer>(); // List of all the objects' values.
-        short quota; // Amount of credits (currency) required by the Company
-        byte players; // Amount of players in the lobby. Unmodded max is 4 but modded max is ~40
-        short input; // Temporary variable used to copy terminal input to scrapList
-        short scrapValue; // Total value of scrap
-        byte bodiesNeeded; // Dead players' bodies can be sold to the Company for 5 scrap each, but you lose some credits that you could use to buy upgrades.
+public class lethalhelper extends JFrame {
+    ArrayList<Integer> scrapList = new ArrayList<Integer>(); // List of all the objects' values.
+    short quota; // Amount of credits (currency) required by the Company
+    byte players; // Amount of players in the lobby. Unmodded max is 4 but modded max is ~40
+    Integer scrapValue; // Total value of scrap
+    byte bodiesNeeded; // Dead players' bodies can be sold to the Company for 5 scrap each, but you lose some credits that you could use to buy upgrades.
+    byte mode;
+    String[] quotaInput;
+    public static void main(String[] args){
+        new lethalhelper();
+    }
+    public lethalhelper() {
+        setTitle("Lethal Helper");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        toFront();
+        setVisible(true);
+        setLayout (new BoxLayout (getContentPane(), BoxLayout.Y_AXIS));
 
-        while (true) {
-            System.out.println();
-            System.out.println();
+        JLabel instructions = new JLabel("Enter quota");
+        add(instructions);
+
+        Scanner scanner = new Scanner(System.in);
+
+        JTextField inputa = new JTextField();
+        add(inputa);
+
+        inputa.addActionListener(l -> {
+            switch (mode) {
+                case 0:
+                    try {
+                        quota = Short.parseShort(inputa.getText());
+                        mode++;
+                        instructions.setText("Enter player count");
+                    } catch(Exception e) {}
+                    break;
+                case 1:
+                    try {
+                        players = Byte.parseByte(inputa.getText());
+                        mode++;
+                        instructions.setText("Enter scrap values, separated by commas");
+                    } catch(Exception e) {}
+                    break;
+                case 2:
+                    try {
+                        quotaInput = inputa.getText().split(",");
+                        for (String s:
+                             quotaInput) {
+                            scrapList.add(Integer.parseInt(s.replace(" ","")));
+                        }
+                        mode++;
+                        instructions.setText("Enter player count");
+                    } catch(Exception e) {}
+                    break;
+            }
+        });
+        /*while (true) {
             System.out.println("Enter quota, 0 to quit"); // Having 0 as a finish code lets me use nextInt instead of nextLine.toString
-            quota = Math.abs(scanner.nextInt());
+            quota = (short) Math.abs(scanner.nextInt());
             if (quota == 0) {
                 break;
             }
 
             System.out.println();
             System.out.println("Enter player count, 0 to ignore");
-            players = Math.abs(scanner.nextInt());
+            players = (byte) Math.abs(scanner.nextInt());
 
             System.out.println();
             System.out.println("Enter scrap values, 0 to finish, -X to delete previous X entries");
             scrapList.clear();
+            int input;
             do {
                 input = scanner.nextInt();
                 if (input > 0) {
@@ -46,13 +92,13 @@ public class lethalhelper {
 
             // This code calculates the total amount of scrap you have
             scrapValue = 0;
-            for (short i : scrapList) {
+            for (Integer i : scrapList) {
                 scrapValue += i;
             }
             
             bodiesNeeded = 0;
             if (scrapValue < quota) {
-                bodiesNeeded = (quota - scrapValue + 4) / 5; // The + 4 bypasses a need for a Math.ceiling since it's being written to an int
+                bodiesNeeded = (byte) ((quota - scrapValue + 4) / 5); // The + 4 bypasses a need for a Math.ceiling since it's being written to an int
                 quota -= bodiesNeeded * 5;
                 
             }
@@ -71,6 +117,7 @@ public class lethalhelper {
             
         }
         scanner.close();
+         */
     }
 
     // I had no plan when starting to make this, but I reasoned my way into it and I can't see a better solution
