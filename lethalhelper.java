@@ -1,18 +1,18 @@
 import javax.swing.*;
 import javax.swing.BoxLayout;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Scanner;
 
 public class lethalhelper extends JFrame {
-    ArrayList<Integer> scrapList = new ArrayList<Integer>(); // List of all the objects' values.
+    static JLabel instructions;
+    static JTextField input;
+    static byte mode;
     short quota; // Amount of credits (currency) required by the Company
     byte players; // Amount of players in the lobby. Unmodded max is 4 but modded max is ~40
-    Integer scrapValue; // Total value of scrap
+    String[] scrapInput;
+    ArrayList<Integer> scrapList = new ArrayList<>(); // List of all the objects' values.
+    int scrapValue; // Total value of scrap
     byte bodiesNeeded; // Dead players' bodies can be sold to the Company for 5 scrap each, but you lose some credits that you could use to buy upgrades.
-    byte mode;
-    String[] quotaInput;
     public static void main(String[] args){
         new lethalhelper();
     }
@@ -23,108 +23,84 @@ public class lethalhelper extends JFrame {
         setVisible(true);
         setLayout (new BoxLayout (getContentPane(), BoxLayout.Y_AXIS));
 
-        JLabel instructions = new JLabel("Enter quota");
+        instructions = new JLabel("Enter quota");
         add(instructions);
 
-        Scanner scanner = new Scanner(System.in);
+        input = new JTextField();
+        add(input);
+        setSize(256,128);
 
-        JTextField inputa = new JTextField();
-        add(inputa);
-
-        inputa.addActionListener(l -> {
+        input.addActionListener(l -> {
             switch (mode) {
                 case 0:
                     try {
-                        quota = Short.parseShort(inputa.getText());
-                        mode++;
-                        instructions.setText("Enter player count");
+                        quota = Short.parseShort(input.getText());
+                        resetFrame("Enter player count, 0 to ignore");
                     } catch(Exception e) {}
                     break;
                 case 1:
                     try {
-                        players = Byte.parseByte(inputa.getText());
-                        mode++;
-                        instructions.setText("Enter scrap values, separated by commas");
+                        players = Byte.parseByte(input.getText());
+                        resetFrame("Enter scrap values, separated by commas");
                     } catch(Exception e) {}
                     break;
                 case 2:
                     try {
-                        quotaInput = inputa.getText().split(",");
+                        scrapInput = input.getText().split(",");
                         for (String s:
-                             quotaInput) {
+                                scrapInput) {
                             scrapList.add(Integer.parseInt(s.replace(" ","")));
                         }
-                        mode++;
-                        instructions.setText("Enter player count");
+
+                        Collections.sort(scrapList, Collections.reverseOrder()); // Sorts the array in descending order
+                        scrapList.addFirst(0); // A single instance of the recursive searcher considers all previous decisions, plus every possible future combination. Adding a 0 to the start allows it to be called once without having to write a case for it
+
+                        // This code calculates the total amount of scrap you have
+                        scrapValue = 0;
+                        for (Integer i : scrapList) {
+                            scrapValue += i;
+                        }
+
+                        bodiesNeeded = 0;
+                        if (scrapValue < quota) {
+                            bodiesNeeded = (byte) ((quota - scrapValue + 4) / 5); // The + 4 bypasses a need for a Math.ceiling since it's being written to an int
+                            quota -= bodiesNeeded * 5;
+
+                        }
+
+                        getContentPane().removeAll();
+                        // This is what prints the solution to the terminal
+                        if (players > 0 && players <= bodiesNeeded) { // You need at least 1 person alive to sell the bodies, so an amount of bodies above maximum means you are unable to meet quota
+                            add(new JLabel("Unable to reach quota"));
+                        } else {
+                            ArrayList<Integer> solution = recursiveSearcher(scrapList, 0, quota);
+                            add(new JLabel(bodiesNeeded + " must be sacrificed, " + -solution.getLast() + " overshoot"));
+                            System.out.println(bodiesNeeded + " must be sacrificed, " + -solution.getLast() + " overshoot"); // Overshoot is strictly <= 0, so the minus sign is important
+                            solution.removeFirst();
+                            solution.removeLast(); // The first value in the list is 0, and the last value in the list is the overshoot of the solution, and it might confuse people if I left it in
+                            for (int i : solution) {
+                                add(new JLabel((Integer.toString(i))));
+                            }
+                        }
+                        revalidate();
+                        repaint();
                     } catch(Exception e) {}
                     break;
             }
         });
-        /*while (true) {
-            System.out.println("Enter quota, 0 to quit"); // Having 0 as a finish code lets me use nextInt instead of nextLine.toString
-            quota = (short) Math.abs(scanner.nextInt());
-            if (quota == 0) {
-                break;
-            }
-
-            System.out.println();
-            System.out.println("Enter player count, 0 to ignore");
-            players = (byte) Math.abs(scanner.nextInt());
-
-            System.out.println();
-            System.out.println("Enter scrap values, 0 to finish, -X to delete previous X entries");
-            scrapList.clear();
-            int input;
-            do {
-                input = scanner.nextInt();
-                if (input > 0) {
-                    scrapList.add(input); // Having a multidimensional array to label the scrap would be cool, but it would be a headache to implement
-                } else { // By prefixing the input with a -, you can remove previous inputs
-                    for (byte i = (byte) input; i < 0; i++) {
-                        scrapList.removeLast();
-                    }
-                }
-            } while (input != 0); // I used a do-while loop because when run more than once, the starting value of input is 0 and not null, and the scanner writes to input within the loop
-            
-
-            Collections.sort(scrapList, Collections.reverseOrder()); // Sorts the array in descending order
-            scrapList.addFirst(0); // A single instance of the recursive searcher considers all previous decisions, plus every possible future combination. Adding a 0 to the start allows it to be called once without having to write a case for it
-
-            // This code calculates the total amount of scrap you have
-            scrapValue = 0;
-            for (Integer i : scrapList) {
-                scrapValue += i;
-            }
-            
-            bodiesNeeded = 0;
-            if (scrapValue < quota) {
-                bodiesNeeded = (byte) ((quota - scrapValue + 4) / 5); // The + 4 bypasses a need for a Math.ceiling since it's being written to an int
-                quota -= bodiesNeeded * 5;
-                
-            }
-            
-            // This is what prints the solution to the terminal
-            System.out.println();
-            if (players > 0 && players <= bodiesNeeded) { // You need at least 1 person alive to sell the bodies, so an amount of bodies above maximum means you are unable to meet quota
-                System.out.println("Unable to reach quota");
-            } else {
-                ArrayList<Integer> solution = recursiveSearcher(scrapList, 0, quota);
-                System.out.println(bodiesNeeded + " must be sacrificed, " + -solution.getLast() + " overshoot"); // Overshoot is strictly <= 0, so the minus sign is important
-                solution.removeFirst();
-                solution.removeLast(); // The first value in the list is 0, and the last value in the list is the overshoot of the solution, and it might confuse people if I left it in
-                System.out.println(solution);
-            }
-            
-        }
-        scanner.close();
-         */
     }
 
-    // I had no plan when starting to make this, but I reasoned my way into it and I can't see a better solution
+    static void resetFrame(String text) {
+        mode++;
+        instructions.setText(text);
+        input.setText("");
+    }
+
+    // I had no plan when starting to make this, but I wandered my way into it, and I can't see a better solution
     static ArrayList<Integer> recursiveSearcher(ArrayList<Integer> scrapList, int pointer, int scrapRequired) {
         ArrayList<Integer> outputList = new ArrayList<Integer>(); // This list will be returned as inputList. It is initialised with the current scrap and required scrap
         outputList.add(scrapList.get(pointer));
-        scrapRequired -= outputList.getFirst(); // The function inherites scrapRequired but not the previous pointer(s)
+        scrapRequired -= outputList.getFirst(); // The function inherits scrapRequired but not the previous pointer(s)
         outputList.add(scrapRequired); // This will always be at the end of the array.
         if (scrapRequired > 0) { // Don't look for more scrap if you've already met quota
             for (int i = pointer + 1; i < scrapList.size(); i++) { // Thankfully I don't have to make a case for when the instance is pointing to the last item in the array, as in that case pointer + 1 >= scrapList.size() and it returns as if scrapRequired > 0 
